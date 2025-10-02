@@ -1,12 +1,13 @@
 package ui;
 
+import java.util.HashSet;
 import java.util.Scanner;
-import structures.PilaGenerica;
 import structures.TablasHash;
+import structures.PilaGenerica;
 
 public class Main {
 
-    private Scanner sc;
+    private final Scanner sc;
 
     public Main() {
         sc = new Scanner(System.in);
@@ -24,14 +25,14 @@ public class Main {
             sc.nextLine(); 
 
             switch (opcion) {
-                case 1:
+                case 1 -> {
                     System.out.println("Ingrese expresion a verificar:");
                     String expresion = sc.nextLine();
                     boolean resultado = verificarBalanceo(expresion);
                     System.out.println("Resultado: " + (resultado ? "TRUE" : "FALSE"));
-                    break;
+                }
 
-                case 2:
+                case 2 -> {
                     System.out.println("Ingrese numeros separados por espacio: ");
                     String lineaNumeros = sc.nextLine();
                     System.out.println("Ingrese suma objetivo: ");
@@ -44,16 +45,17 @@ public class Main {
                     }
 
                     encontrarParesConSuma(numeros, objetivo);
-                    break;
+                }
 
-                case 3:
-                    System.out.println("Chao");
-                    sc.close();
+                case 3 -> {
+                    try (sc) {
+                        System.out.println("Chao");
+                    }
                     System.exit(0);
-                    break;
+                }
 
-                default:
-                    System.out.println("Opcion no permitida");
+
+                default -> System.out.println("Opcion no permitida");
             }
         }
     }
@@ -64,7 +66,23 @@ public class Main {
      * @return true si esta balanceada, false si no
      */
     public boolean verificarBalanceo(String s) {
-        // TODO: completar 
+        PilaGenerica<Character> expresiones = new PilaGenerica<>(s.length());
+        for (char c : s.toCharArray()) {
+            if(c == '(' || c == '[' || c == '{'){
+                expresiones.Push(c);
+            }
+            else if(c == ')' || c == ']' || c == '}'){
+                if(expresiones.getTop() != -1){
+                    return false;
+                }
+            }
+            char top = expresiones.Pop();
+            if((c == ')' && top != '(') ||
+                (c == ']' && top != '[') ||
+                (c == '}' && top != '{')){
+                return false;
+                }
+        }
         return false;
     }
 
@@ -74,7 +92,35 @@ public class Main {
      * @param objetivo suma objetivo
      */
     public void encontrarParesConSuma(int[] numeros, int objetivo) {
-        // TODO: completar
+        try {
+        TablasHash tabla = new TablasHash(numeros.length * 2);
+        HashSet<String> paresUnicos = new HashSet<>();
+
+        for (int num : numeros) {
+            int complemento = objetivo - num;
+
+         
+            if (tabla.search(complemento, complemento)) {
+                int menor = Math.min(num, complemento);
+                int mayor = Math.max(num, complemento);
+                String par = "(" + menor + ", " + mayor + ")";
+
+                if (!paresUnicos.contains(par)) {
+                    paresUnicos.add(par);
+                    System.out.println("Par encontrado: " + par);
+                }
+            }
+        
+            tabla.insert(num, num);
+        }
+
+        if (paresUnicos.isEmpty()) {
+            System.out.println("Ningún par encontrado para suma " + objetivo);
+        }
+
+        } catch (Exception e) {
+            
+        }
     }
 
     public static void main(String[] args) throws Exception {
